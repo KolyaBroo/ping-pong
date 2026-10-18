@@ -1,4 +1,6 @@
 from pygame import *
+from customtkinter import *
+from random import *
 import socket
 import json
 from threading import Thread
@@ -41,6 +43,39 @@ def receive():
 font_win = font.Font(None, 72)
 font_main = font.Font(None, 36)
 # --- ЗОБРАЖЕННЯ ----
+# --- ФОН ---
+particles = []
+
+for i in range(40):
+    particles.append({
+        "x": randint(0, WIDTH),
+        "y": randint(0, HEIGHT),
+        "speed": randint(1, 3),
+        "size": randint(1, 3)
+    })
+
+
+def draw_background():
+    screen.fill((10, 12, 20))
+
+    for y in range(0, HEIGHT, 40):
+        draw.line(screen,(20, 25, 40),(0, y),(WIDTH, y),1)
+    for x in range(0, WIDTH, 40):
+        draw.line(screen,(20, 25, 40),(x, 0),(x, HEIGHT),1 )
+
+    #Центр-лінія
+    for y in range(0, HEIGHT, 25):
+        draw.rect(screen,(50, 55, 75),(WIDTH // 2 - 1, y, 2, 12))
+
+    #Партикли
+    for particle in particles:
+        particle["y"] += particle["speed"]
+
+        if particle["y"] > HEIGHT:
+            particle["y"] = 0
+            particle["x"] = randint(0, WIDTH)
+
+        draw.circle(screen,(35, 45, 65),(particle["x"], particle["y"]),particle["size"])
 
 # --- ЗВУКИ ---
 
@@ -56,7 +91,7 @@ while True:
             exit()
 
     if "countdown" in game_state and game_state["countdown"] > 0:
-        screen.fill((0, 0, 0))
+        draw_background()
         countdown_text = font.Font(None, 72).render(str(game_state["countdown"]), True, (255, 255, 255))
         screen.blit(countdown_text, (WIDTH // 2 - 20, HEIGHT // 2 - 30))
         display.update()
@@ -88,7 +123,7 @@ while True:
         continue  # Блокує гру після перемоги
 
     if game_state:
-        screen.fill((30, 30, 30))
+        draw_background()
         draw.rect(screen, (0, 255, 0), (20, game_state['paddles']['0'], 20, 100))
         draw.rect(screen, (255, 0, 255), (WIDTH - 40, game_state['paddles']['1'], 20, 100))
         draw.circle(screen, (255, 255, 255), (game_state['ball']['x'], game_state['ball']['y']), 10)
@@ -105,7 +140,7 @@ while True:
 
     else:
         wating_text = font_main.render(f"Очікування гравців...", True, (255, 255, 255))
-        screen.blit(wating_text, (WIDTH // 2 - 25, 20))
+        screen.blit(wating_text, (WIDTH // 2 - 120, 60))
 
     display.update()
     clock.tick(60)
